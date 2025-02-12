@@ -4,24 +4,30 @@ require('dotenv').config();
 const express    = require('express');
 const mongoose   = require('mongoose');
 const session    = require('express-session');
-const bcrypt = require('bcryptjs');
-
+const bcrypt     = require('bcryptjs');
 const bodyParser = require('body-parser');
 const QRCode     = require('qrcode');
 const path       = require('path');
 
+// Require the patient model (ensure the file is named "patient.js" in the "models" folder)
 const Patient    = require('./models/patient');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Use the environment variable MONGODB_URI if available, otherwise fallback to local connection
+// (Optional) Set Mongoose strictQuery to suppress deprecation warnings.
+// Change to true if you prefer strict mode.
+mongoose.set('strictQuery', false);
+
+// Use the environment variable MONGODB_URI if available; otherwise fallback to local connection.
+// IMPORTANT: On Render, MONGODB_URI must be set to your Atlas connection string.
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/patientQR';
 
-mongoose.connect(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose
+  .connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -30,9 +36,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 
-// Session middleware (in production, use a robust session store)
+// Session middleware
+// Note: MemoryStore is not recommended for production; consider using a robust store (like connect-mongo) for production deployments.
 app.use(session({
-  secret: 'someSuperSecretKey', // change this secret for production
+  secret: 'someSuperSecretKey', // Change this for production
   resave: false,
   saveUninitialized: false
 }));
@@ -74,7 +81,7 @@ app.post('/patients', async (req, res) => {
   try {
     // Extract fields from the form
     const { patientId, name, phoneNo, address, symptoms, reason, admitDate, doctor, bedNumber, accessPassword } = req.body;
-    // Hash the access password securely using bcrypt
+    // Hash the access password securely using bcryptjs
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(accessPassword, saltRounds);
     
@@ -90,12 +97,12 @@ app.post('/patients', async (req, res) => {
       doctor,
       bedNumber,
       accessPassword: hashedPassword
-      // (For reports, you could add file-upload handling here later)
+      // (For reports, add file-upload handling later if needed)
     });
     await newPatient.save();
     
     // Determine the base URL for QR code generation:
-    // Use the BASE_URL environment variable if set (e.g., your Render URL),
+    // Use the BASE_URL environment variable if set (for example, your Render URL),
     // otherwise fallback to localhost (useful for local testing).
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
     const patientUrl = `${baseUrl}/patient/${newPatient._id}`;
@@ -108,12 +115,11 @@ app.post('/patients', async (req, res) => {
   }
 });
 
-// (Optional) Endpoint to generate a QR code image – here we use a third-party API in the view.
+// Optional endpoint to generate a QR code image on the server
 app.get('/qrcode/:id', async (req, res) => {
   try {
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
     const patientUrl = `${baseUrl}/patient/${req.params.id}`;
-    // Generate QR code as Data URL (if you wish to generate on the server)
     const qrCodeData = await QRCode.toDataURL(patientUrl);
     res.send(`<img src="${qrCodeData}" alt="QR Code">`);
   } catch (err) {
@@ -135,10 +141,8 @@ app.post('/patient/:id/login', async (req, res) => {
     if (!patient) {
       return res.send('Patient record not found.');
     }
-    // Verify the password using bcrypt
     const match = await bcrypt.compare(password, patient.accessPassword);
     if (match) {
-      // Mark session as authenticated for this patient record
       req.session.authenticated = true;
       req.session.patientId = req.params.id;
       res.redirect(`/patient/${req.params.id}/dashboard`);
@@ -215,6 +219,7 @@ app.get('/patient/:id/logout', (req, res) => {
   });
 });
 
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on ${process.env.BASE_URL || 'http://localhost:' + PORT}`);
 });
