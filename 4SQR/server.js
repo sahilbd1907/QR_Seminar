@@ -1,4 +1,6 @@
 // server.js
+require('dotenv').config();
+
 const express    = require('express');
 const mongoose   = require('mongoose');
 const session    = require('express-session');
@@ -12,13 +14,15 @@ const Patient    = require('./models/Patient');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB (adjust connection string as needed)
-mongoose.connect('mongodb://localhost:27017/patientQR', {
+// Use the environment variable MONGODB_URI if available, otherwise fallback to local connection
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/patientQR';
+
+mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -52,17 +56,18 @@ app.get('/', (req, res) => {
 app.get('/add', (req, res) => {
   res.render('addPatient', { error: null });
 });
+
 // Route to view all patients in the database
 app.get('/patients/all', async (req, res) => {
-    try {
-      const patients = await Patient.find({});
-      res.render('allPatients', { patients });
-    } catch (err) {
-      console.error(err);
-      res.send('Error retrieving patients.');
-    }
-  });
-  
+  try {
+    const patients = await Patient.find({});
+    res.render('allPatients', { patients });
+  } catch (err) {
+    console.error(err);
+    res.send('Error retrieving patients.');
+  }
+});
+
 // Handle submission of patient data
 app.post('/patients', async (req, res) => {
   try {
@@ -88,8 +93,11 @@ app.post('/patients', async (req, res) => {
     });
     await newPatient.save();
     
-    // Construct the URL that the QR code will point to
-    const patientUrl = `http://localhost:${PORT}/patient/${newPatient._id}`;
+    // Determine the base URL for QR code generation:
+    // Use the BASE_URL environment variable if set (e.g., your Render URL),
+    // otherwise fallback to localhost (useful for local testing).
+    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+    const patientUrl = `${baseUrl}/patient/${newPatient._id}`;
     
     // Render the QR code page
     res.render('qr', { patientUrl });
@@ -102,7 +110,8 @@ app.post('/patients', async (req, res) => {
 // (Optional) Endpoint to generate a QR code image – here we use a third-party API in the view.
 app.get('/qrcode/:id', async (req, res) => {
   try {
-    const patientUrl = `http://localhost:${PORT}/patient/${req.params.id}`;
+    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+    const patientUrl = `${baseUrl}/patient/${req.params.id}`;
     // Generate QR code as Data URL (if you wish to generate on the server)
     const qrCodeData = await QRCode.toDataURL(patientUrl);
     res.send(`<img src="${qrCodeData}" alt="QR Code">`);
@@ -206,5 +215,5 @@ app.get('/patient/:id/logout', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on ${process.env.BASE_URL || 'http://localhost:' + PORT}`);
 });
