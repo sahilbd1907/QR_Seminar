@@ -10,7 +10,7 @@ const bodyParser = require('body-parser');
 const QRCode     = require('qrcode');
 const path       = require('path');
 
-const Patient    = require('./models/Patient');
+const Patient    = require('./models/patient');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
