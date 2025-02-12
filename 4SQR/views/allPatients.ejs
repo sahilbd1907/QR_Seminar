@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Patients</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    /* Additional table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>All Patients</h2>
+    <% if (patients.length === 0) { %>
+      <p>No patients found.</p>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Patient ID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Bed Number</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% patients.forEach(function(patient){ %>
+            <tr>
+              <td><%= patient.patientId %></td>
+              <td><%= patient.name %></td>
+              <td><%= patient.phoneNo %></td>
+              <td><%= patient.bedNumber %></td>
+              <td>
+                <!-- Clicking Access will take the user to the patient record password prompt -->
+                <a class="btn" href="/patient/<%= patient._id %>">Access</a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+    <a class="btn" href="/add">Back to Add Patient</a>
+  </div>
+</body>
+</html>

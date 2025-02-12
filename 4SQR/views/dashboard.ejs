@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Patient Record Dashboard</h2>
+    <div class="dashboard-options">
+      <a class="btn" href="/patient/<%= patientId %>/view">See Details</a>
+      <a class="btn" href="/patient/<%= patientId %>/edit">Edit Details</a>
+    </div>
+    <a class="btn logout" href="/patient/<%= patientId %>/logout">Logout</a>
+  </div>
+</body>
+</html>

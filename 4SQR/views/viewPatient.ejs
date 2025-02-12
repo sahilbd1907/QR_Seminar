@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Patient Details</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Patient Details</h2>
+    <p><strong>Patient ID:</strong> <%= patient.patientId %></p>
+    <p><strong>Name:</strong> <%= patient.name %></p>
+    <p><strong>Phone Number:</strong> <%= patient.phoneNo %></p>
+    <p><strong>Address:</strong> <%= patient.address %></p>
+    <p><strong>Symptoms:</strong> <%= patient.symptoms %></p>
+    <p><strong>Reason for Admission:</strong> <%= patient.reason %></p>
+    <p><strong>Admit Date:</strong> <%= patient.admitDate.toDateString() %></p>
+    <p><strong>Doctor Appointed:</strong> <%= patient.doctor %></p>
+    <p><strong>Bed Number:</strong> <%= patient.bedNumber %></p>
+    <!-- (Reports or additional fields can be added here) -->
+    <a class="btn" href="/patient/<%= patient._id %>/dashboard">Back to Dashboard</a>
+  </div>
+</body>
+</html>

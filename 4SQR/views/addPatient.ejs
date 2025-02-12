@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Patient</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Add Patient Details</h2>
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+    <form action="/patients" method="POST">
+      <div class="form-group">
+        <label for="patientId">Patient ID:</label>
+        <input type="text" name="patientId" id="patientId" required>
+      </div>
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required>
+      </div>
+      <div class="form-group">
+        <label for="phoneNo">Phone Number:</label>
+        <input type="text" name="phoneNo" id="phoneNo" required>
+      </div>
+      <div class="form-group">
+        <label for="address">Address:</label>
+        <textarea name="address" id="address" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="symptoms">Symptoms:</label>
+        <textarea name="symptoms" id="symptoms" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="reason">Reason for Admission:</label>
+        <textarea name="reason" id="reason" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="admitDate">Admit Date:</label>
+        <input type="date" name="admitDate" id="admitDate" required>
+      </div>
+      <div class="form-group">
+        <label for="doctor">Doctor Appointed:</label>
+        <input type="text" name="doctor" id="doctor" required>
+      </div>
+      <div class="form-group">
+        <label for="bedNumber">Bed Number:</label>
+        <input type="text" name="bedNumber" id="bedNumber" required>
+      </div>
+      <div class="form-group">
+        <label for="accessPassword">Set Access Password:</label>
+        <input type="password" name="accessPassword" id="accessPassword" required>
+      </div>
+      <!-- (File upload for reports could be added here later) -->
+      <button type="submit">Add Patient</button>
+    </form>
+    <a class="btn" href="/patients/all">View All Patients</a>
+  </div>
+</body>
+</html>
