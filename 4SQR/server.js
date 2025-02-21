@@ -12,6 +12,9 @@ const path       = require('path');
 // Require the patient model (ensure the file is named "patient.js" in the "models" folder)
 const Patient    = require('./models/patient');
 
+// Require the patient model (ensure the file is named "patient.js" in the "models" folder)
+const Prescription    = require('./models/prescription');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -163,7 +166,9 @@ app.get('/patient/:id/dashboard', checkAuth, (req, res) => {
 // View patient details (read-only)
 app.get('/patient/:id/view', checkAuth, async (req, res) => {
   try {
-    const patient = await Patient.findById(req.params.id);
+    const patient = await Patient.findById(req.params.id).populate({
+      path:"prescriptions",
+    });
     if (!patient) {
       return res.send('Patient not found.');
     }
@@ -209,6 +214,54 @@ app.post('/patient/:id/edit', checkAuth, async (req, res) => {
     console.error(err);
     res.render('editPatient', { patient: req.body, error: 'Error updating patient details.' });
   }
+});
+
+// Render the prescription form 
+app.get('/patient/:id/prescription', checkAuth, async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.id);
+    if (!patient) {
+      return res.send('Patient not found.');
+    }
+    res.render('prescription',{ patient, error: null });
+  } catch (err) {
+    console.error(err);
+    res.send('Error retrieving patient details for editing.');
+  }
+});
+
+// Process the prescription details
+app.post('/patient/:id/prescription', checkAuth, async (req, res) => {
+  try {
+    const { date, time, doctor, medication, dosage, instructions } = req.body;
+    const patientId = req.params.id;
+
+    const patient = await Patient.findOne({_id: patientId });
+        if (!patient) {
+            return res.status(404).json({ error: 'Patient not found' });
+        }
+
+    const newPrescription = new Prescription({
+        patientId,
+        date,
+        time,
+        doctor,
+        medication,
+        dosage,
+        instructions
+    });
+
+    const savedPrescription = await newPrescription.save();
+
+        // ✅ Push prescription ID into the patient's prescriptions array
+    patient.prescriptions.push(savedPrescription._id);
+    await patient.save();
+
+    res.redirect(`/patient/${req.params.id}/dashboard`);
+} catch (error) {
+  console.error(error);
+  res.render('prescription', { patient: req.body, error: 'Error updating patient details.' });
+}
 });
 
 // Logout route (clears session for this patient record)

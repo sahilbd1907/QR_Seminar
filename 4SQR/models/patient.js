@@ -1,5 +1,7 @@
 // models/Patient.js
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const Prescription = require('./prescription.js');
 
 const PatientSchema = new mongoose.Schema({
   patientId: { type: String, required: true },
@@ -11,7 +13,13 @@ const PatientSchema = new mongoose.Schema({
   admitDate: { type: Date, required: true },
   doctor: { type: String, required: true },
   bedNumber: { type: String, required: true },
-  accessPassword: { type: String, required: true }
+  accessPassword: { type: String, required: true },
+  prescriptions: [
+    {
+    type : Schema.Types.ObjectId,
+    ref : "Prescription"
+    }
+  ]
   // Optionally, add a "reports" field if you implement file uploads.
 });
 
