@@ -287,7 +287,7 @@ const path       = require('path');
 const { exec }   = require('child_process');
 
 // Require models (adjust file names to match your repository’s case)
-const Patient       = require('./models/Patient');
+const Patient       = require('./models/patient');
 const Prescription  = require('./models/prescription');
 
 const app = express();
