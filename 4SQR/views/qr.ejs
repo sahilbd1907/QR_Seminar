@@ -23,7 +23,7 @@
         <p>Error generating QR code.</p>
       <% } %>
     </div>
-    <p>Or directly visit: <a href="<%= patientUrl %>"><%= patientUrl %></a></p>
+    <p>Decode Here: <a href="https://foursqr-decoder.onrender.com" target="_blank">https://foursqr-decoder.onrender.com</a></p>
     <% if (qrBase64) { %>
       <p>
         <a href="data:image/png;base64,<%= qrBase64 %>" download="4sqr.png">Download QR Code</a>
