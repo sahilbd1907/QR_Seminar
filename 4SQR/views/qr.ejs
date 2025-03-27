@@ -4,19 +4,31 @@
   <meta charset="UTF-8">
   <title>4SQR Code Generated</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .qr-code img {
+      max-width: 300px;
+      margin: 0 auto;
+      display: block;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h2>4SQR for Patient Record</h2>
     <p>Scan this 4SQR code to access the patient details:</p>
     <div class="qr-code">
-      <% if (qrCodeUrl) { %>
-        <img src="<%= qrCodeUrl %>" alt="QR Code">
+      <% if (qrBase64) { %>
+        <img src="data:image/png;base64,<%= qrBase64 %>" alt="4SQR Code">
       <% } else { %>
         <p>Error generating QR code.</p>
       <% } %>
     </div>
     <p>Or directly visit: <a href="<%= patientUrl %>"><%= patientUrl %></a></p>
+    <% if (qrBase64) { %>
+      <p>
+        <a href="data:image/png;base64,<%= qrBase64 %>" download="4sqr.png">Download QR Code</a>
+      </p>
+    <% } %>
     <a href="/add">Add Another Patient</a>
   </div>
 </body>
