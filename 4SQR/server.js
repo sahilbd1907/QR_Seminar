@@ -345,6 +345,7 @@ app.get('/patients/all', async (req, res) => {
 });
 
 // Handle submission of patient data and generate custom 4SQR code (download version)
+// Handle submission of patient data and generate custom 4SQR code
 app.post('/patients', async (req, res) => {
   try {
     const { patientId, name, phoneNo, address, symptoms, reason, admitDate, doctor, bedNumber, accessPassword } = req.body;
@@ -365,34 +366,29 @@ app.post('/patients', async (req, res) => {
     });
     await newPatient.save();
 
-    // Build the patient URL (using BASE_URL if set)
+    // Build the patient URL using BASE_URL if set
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
     const patientUrl = `${baseUrl}/patient/${newPatient._id}`;
 
     // Build the command to run your Python 4SQR generator.
-    // The Python script now takes two arguments: the patient URL and the cell_size.
-    // It returns a base64-encoded PNG image on stdout.
+    // The Python script now returns a base64-encoded PNG image.
     const pythonScriptPath = path.join(__dirname, '4sqr_encoder.py');
     const cellSize = 100;
     const cmd = `python "${pythonScriptPath}" "${patientUrl}" ${cellSize}`;
     console.log("Running command:", cmd);
 
-    // Execute the Python command (increase maxBuffer if needed)
     exec(cmd, { maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
         console.error("Error generating 4SQR:", error);
         console.error("stderr:", stderr);
         console.error("stdout:", stdout);
-        return res.render('qr', { patientUrl, qrCodeUrl: null, error: 'Error generating QR code.' });
+        return res.render('qr', { patientUrl, qrBase64: null, error: 'Error generating QR code.' });
       }
       console.log("Python stdout:", stdout);
       const base64Data = stdout.trim();
-      // Convert base64 string to a binary Buffer
-      const imgBuffer = Buffer.from(base64Data, 'base64');
-      // Set headers to force a download as "4sqr.png"
-      res.setHeader('Content-Disposition', 'attachment; filename=4sqr.png');
-      res.setHeader('Content-Type', 'image/png');
-      res.send(imgBuffer);
+      
+      // Render the view that both displays the image and provides a download link.
+      res.render('qr', { patientUrl, qrBase64: base64Data, error: null });
     });
   } catch (err) {
     console.error(err);
