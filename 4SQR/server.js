@@ -287,7 +287,7 @@ const path = require('path');
 const { exec } = require('child_process');
 
 // Require the patient model
-const Patient = require('./models/Patient');
+const Patient = require('./models/patient');
 // Require the prescription model
 const Prescription = require('./models/prescription');
 
