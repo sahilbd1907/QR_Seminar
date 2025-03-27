@@ -278,18 +278,19 @@
 // });
 require('dotenv').config();
 
-const express = require('express');
-const mongoose = require('mongoose');
-const session = require('express-session');
-const bcrypt = require('bcryptjs');
+const express    = require('express');
+const mongoose   = require('mongoose');
+const session    = require('express-session');
+const bcrypt     = require('bcryptjs');
 const bodyParser = require('body-parser');
-const path = require('path');
-const { exec } = require('child_process');
+const path       = require('path');
+const { exec }   = require('child_process');
+const fs         = require('fs');
 
-// Require the patient model
-const Patient = require('./models/patient');
+// Require the patient model (adjust filename casing if needed)
+const Patient    = require('./models/patient');
 // Require the prescription model
-const Prescription = require('./models/prescription');
+const Prescription    = require('./models/prescription');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -309,7 +310,7 @@ app.set('view engine', 'ejs');
 
 // Session middleware
 app.use(session({
-  secret: 'someSuperSecretKey', // Change this for production
+  secret: 'someSuperSecretKey', // Change for production
   resave: false,
   saveUninitialized: false
 }));
@@ -366,11 +367,12 @@ app.post('/patients', async (req, res) => {
     });
     await newPatient.save();
 
-    // Build the patient URL using the BASE_URL environment variable if available.
+    // Build the patient URL (using BASE_URL if set)
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
     const patientUrl = `${baseUrl}/patient/${newPatient._id}`;
 
     // Define the output file path for the QR image
+    // Ensure the folder public/qr_codes exists
     const outputFile = path.join(__dirname, 'public', 'qr_codes', `${newPatient._id}.png`);
 
     // Build the command to run your Python 4SQR generator with cell size 100
@@ -387,11 +389,15 @@ app.post('/patients', async (req, res) => {
       }
       console.log("stdout:", stdout);
       console.log("stderr:", stderr);
-      // Render the view with the generated QR image URL
-      res.render('qr', {
-        patientUrl,
-        qrCodeUrl: `/qr_codes/${newPatient._id}.png`,
-        error: null
+
+      // Instead of rendering a view, send the file as a download.
+      res.download(outputFile, '4sqr.png', (err) => {
+        if (err) {
+          console.error("Error sending download:", err);
+          return res.render('qr', { patientUrl, qrCodeUrl: null, error: 'Error sending QR code download.' });
+        }
+        // Optionally, delete the file after sending if not needed.
+        // fs.unlink(outputFile, (unlinkErr) => { if (unlinkErr) console.error(unlinkErr); });
       });
     });
   } catch (err) {
@@ -410,9 +416,7 @@ app.post('/patient/:id/login', async (req, res) => {
   try {
     const { password } = req.body;
     const patient = await Patient.findById(req.params.id);
-    if (!patient) {
-      return res.send('Patient record not found.');
-    }
+    if (!patient) return res.send('Patient record not found.');
     const match = await bcrypt.compare(password, patient.accessPassword);
     if (match) {
       req.session.authenticated = true;
@@ -513,6 +517,7 @@ app.post('/patient/:id/prescription', checkAuth, async (req, res) => {
     });
 
     const savedPrescription = await newPrescription.save();
+
     // Push prescription ID into the patient's prescriptions array
     patient.prescriptions.push(savedPrescription._id);
     await patient.save();
@@ -532,7 +537,7 @@ app.get('/patient/:id/logout', (req, res) => {
   });
 });
 
-// Updated app.listen for deployment: bind to 0.0.0.0
+// Bind to all interfaces for deployment (0.0.0.0)
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on ${process.env.BASE_URL || 'http://0.0.0.0:' + PORT}`);
 });
