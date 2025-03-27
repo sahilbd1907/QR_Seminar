@@ -135,8 +135,9 @@ th {
 
 /* QR Code centering */
 .qr-code img {
-  display: block;
-  margin: 0 auto;
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
 }
 
 .prescription-container{

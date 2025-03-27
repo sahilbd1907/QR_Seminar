@@ -2,15 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>QR Code Generated</title>
+  <title>4SQR Code Generated</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <div class="container">
-    <h2>QR Code for Patient Record</h2>
-    <p>Scan this QR code to access the patient details:</p>
+    <h2>4SQR for Patient Record</h2>
+    <p>Scan this 4SQR code to access the patient details:</p>
     <div class="qr-code">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?data=<%= encodeURIComponent(patientUrl) %>&size=200x200" alt="QR Code">
+      <% if (qrCodeUrl) { %>
+        <img src="<%= qrCodeUrl %>" alt="QR Code">
+      <% } else { %>
+        <p>Error generating QR code.</p>
+      <% } %>
     </div>
     <p>Or directly visit: <a href="<%= patientUrl %>"><%= patientUrl %></a></p>
     <a href="/add">Add Another Patient</a>
